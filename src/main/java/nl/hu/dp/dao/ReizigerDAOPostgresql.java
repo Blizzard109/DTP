@@ -1,5 +1,6 @@
-package nl.hu.dp.doa;
+package nl.hu.dp.dao;
 
+import nl.hu.dp.domain.OVChipkaart;
 import nl.hu.dp.domain.Reiziger;
 
 import java.sql.*;
@@ -10,6 +11,7 @@ public class ReizigerDAOPostgresql implements ReizigerDAO {
 
     private Connection connection = null;
     private AdresDAO adresDAO;
+    private OVChipkaartDAO ovChipkaartDAO;
 
     public ReizigerDAOPostgresql(Connection inConnection) throws SQLException {
         this.connection = inConnection;
@@ -18,6 +20,12 @@ public class ReizigerDAOPostgresql implements ReizigerDAO {
     public ReizigerDAOPostgresql(Connection inConnection, AdresDAO adresDAO){
         this.adresDAO = adresDAO;
         this.connection = inConnection;
+    }
+
+    public ReizigerDAOPostgresql(Connection inConnection, AdresDAO adresDAO, OVChipkaartDAO ovChipkaartDAO){
+        this.adresDAO = adresDAO;
+        this.connection = inConnection;
+        this.ovChipkaartDAO = ovChipkaartDAO;
     }
 
     @Override
@@ -36,6 +44,13 @@ public class ReizigerDAOPostgresql implements ReizigerDAO {
 
             if(this.adresDAO != null){
                 this.adresDAO.save(inReiziger.getAdres());
+            }
+
+            if(this.ovChipkaartDAO != null){
+                for (OVChipkaart a: inReiziger.getOvChipkaartArrayList()
+                     ) {
+                    this.ovChipkaartDAO.save(a);
+                }
             }
 
             return true;
@@ -80,6 +95,13 @@ public class ReizigerDAOPostgresql implements ReizigerDAO {
             statement.close();
             if(this.adresDAO != null){
                 this.adresDAO.delete(inReiziger.getAdres());
+            }
+
+            if(this.ovChipkaartDAO != null){
+                for (OVChipkaart a: inReiziger.getOvChipkaartArrayList()
+                ) {
+                    this.ovChipkaartDAO.delete(a);
+                }
             }
 
             return true;

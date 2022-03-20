@@ -1,9 +1,9 @@
 package nl.hu.dp;
 
-import nl.hu.dp.doa.AdresDAO;
-import nl.hu.dp.doa.AdresDAOPostgresql;
-import nl.hu.dp.doa.ReizigerDAO;
-import nl.hu.dp.doa.ReizigerDAOPostgresql;
+import nl.hu.dp.dao.AdresDAO;
+import nl.hu.dp.dao.AdresDAOPostgresql;
+import nl.hu.dp.dao.ReizigerDAO;
+import nl.hu.dp.dao.ReizigerDAOPostgresql;
 import nl.hu.dp.domain.Adres;
 import nl.hu.dp.domain.Reiziger;
 

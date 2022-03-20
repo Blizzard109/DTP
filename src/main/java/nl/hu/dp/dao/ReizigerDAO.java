@@ -1,4 +1,4 @@
-package nl.hu.dp.doa;
+package nl.hu.dp.dao;
 import nl.hu.dp.domain.Reiziger;
 import java.sql.*;
 import java.util.ArrayList;

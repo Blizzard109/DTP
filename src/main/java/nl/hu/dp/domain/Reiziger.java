@@ -1,6 +1,7 @@
 package nl.hu.dp.domain;
 
 import java.sql.Date;
+import java.util.ArrayList;
 
 public class Reiziger {
     private int id = 0;
@@ -9,6 +10,7 @@ public class Reiziger {
     private String achternaam = "";
     private Date geboortedatum = new Date(0);
     private Adres adres;
+    private ArrayList<OVChipkaart> ovChipkaartArrayList = new ArrayList<OVChipkaart>();
 
     public Reiziger(){};
 
@@ -72,6 +74,14 @@ public class Reiziger {
 
     public void setAdres(Adres adres) {
         this.adres = adres;
+    }
+
+    public ArrayList<OVChipkaart> getOvChipkaartArrayList() {
+        return ovChipkaartArrayList;
+    }
+
+    public void setOvChipkaartArrayList(ArrayList<OVChipkaart> ovChipkaartArrayList) {
+        this.ovChipkaartArrayList = ovChipkaartArrayList;
     }
 
     @Override

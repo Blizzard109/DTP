@@ -1,10 +1,8 @@
 package nl.hu.dp;
 
-import nl.hu.dp.dao.AdresDAO;
-import nl.hu.dp.dao.AdresDAOPostgresql;
-import nl.hu.dp.dao.ReizigerDAO;
-import nl.hu.dp.dao.ReizigerDAOPostgresql;
+import nl.hu.dp.dao.*;
 import nl.hu.dp.domain.Adres;
+import nl.hu.dp.domain.OVChipkaart;
 import nl.hu.dp.domain.Reiziger;
 
 import java.sql.*;
@@ -59,14 +57,61 @@ public class Main {
         System.out.println("Alle reizigers: ");
         try {
             getConnection();
+            OVChipkaartDAO ovChipkaartDAO = new OVChipkaartDAOPostgresql(connection);
             AdresDAO dao = new AdresDAOPostgresql(connection);
             //testAdresDAO(dao);
-            ReizigerDAO rdao = new ReizigerDAOPostgresql(connection, dao);
-            testReizigerDAO(rdao);
+            ReizigerDAO rdao = new ReizigerDAOPostgresql(connection, dao, ovChipkaartDAO);
+            //testReizigerDAO(rdao);
+            testOVDAO(rdao, ovChipkaartDAO, dao);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         closeConnection();
+    }
+
+    private static void testOVDAO(ReizigerDAO reizigerDAO, OVChipkaartDAO ovChipkaartDAO, AdresDAO adresDAO) throws SQLException{
+        Adres adres = new Adres(1, "3511LX", "37", "Visschersplein", "Utrecht", 1);
+        Reiziger reiziger = new Reiziger(1, "G", "van", "Rijn", java.sql.Date.valueOf("2002-09-17"), adres);
+        OVChipkaart ov1 = new OVChipkaart(1, java.sql.Date.valueOf("2002-09-17"), 2, 10, 1);
+        OVChipkaart ov2 = new OVChipkaart(6, java.sql.Date.valueOf("2002-09-17"), 2, 10, 1);
+
+        reiziger.addToOvChipkaartArryList(ov1);
+        reiziger.addToOvChipkaartArryList(ov2);
+
+        reiziger.setAdres(adres);
+
+        System.out.println(reiziger);
+
+        List<Reiziger> reizigers = reizigerDAO.findAll();
+        List<OVChipkaart> ovs = ovChipkaartDAO.findAll();
+
+        System.out.println("[Test] ReizigerDAO.findAll() geeft de volgende reizigers:");
+        for (Reiziger r : reizigers) {
+            System.out.println(r);
+        }
+        System.out.println();
+
+        System.out.println("[Test] ovChipkaartDAO.findAll() geeft de volgende ov's:");
+        for (OVChipkaart o : ovs) {
+            System.out.println(o);
+        }
+        System.out.println();
+        // Delete CRUD-operation
+        System.out.println("Aantal reizigers voor delete: " + reizigers.size());
+        System.out.println("Aantal ovs voor delete: " + ovs.size());
+        reizigerDAO.delete(reiziger);
+        reizigers = reizigerDAO.findAll();
+        ovs = ovChipkaartDAO.findAll();
+        System.out.println("Aantal reizigers na delete: " + reizigers.size());
+        System.out.println("Aantal ovs na delete: " + ovs.size());
+
+        // Maak een nieuwe reiziger aan en persisteer deze in de database
+        System.out.print("[Test] Eerst " + reizigers.size() + " reizigers, na ReizigerDAO.save() ");
+        reizigerDAO.save(reiziger);
+        reizigers = reizigerDAO.findAll();
+        ovs = ovChipkaartDAO.findAll();
+        System.out.println(reizigers.size() + " reizigers\n");
+        System.out.println(ovs.size() + " ov's\n");
     }
 
     private static void testAdresDAO(AdresDAO adresDAO) throws SQLException{

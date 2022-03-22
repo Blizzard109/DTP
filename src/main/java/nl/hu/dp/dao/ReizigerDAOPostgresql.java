@@ -87,12 +87,6 @@ public class ReizigerDAOPostgresql implements ReizigerDAO {
     @Override
     public boolean delete(Reiziger inReiziger){
         try{
-            PreparedStatement statement = this.connection.prepareStatement(
-                    "DELETE FROM reiziger WHERE reiziger_id = ?;");
-
-            statement.setInt(1, inReiziger.getId());
-            statement.executeUpdate();
-            statement.close();
             if(this.adresDAO != null){
                 this.adresDAO.delete(inReiziger.getAdres());
             }
@@ -104,6 +98,12 @@ public class ReizigerDAOPostgresql implements ReizigerDAO {
                 }
             }
 
+            PreparedStatement statement = this.connection.prepareStatement(
+                    "DELETE FROM reiziger WHERE reiziger_id = ?;");
+
+            statement.setInt(1, inReiziger.getId());
+            statement.executeUpdate();
+            statement.close();
             return true;
 
         } catch (SQLException e){

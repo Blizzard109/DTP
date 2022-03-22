@@ -9,7 +9,6 @@ public class OVChipkaart {
     private int klasse;
     private double saldo;
     private int reiziger_id;
-    private Reiziger reiziger;
 
     public OVChipkaart(){}
 
@@ -61,11 +60,15 @@ public class OVChipkaart {
         this.reiziger_id = reiziger_id;
     }
 
-    public Reiziger getReiziger() {
-        return reiziger;
-    }
 
-    public void setReiziger(Reiziger reiziger) {
-        this.reiziger = reiziger;
+    @Override
+    public String toString() {
+        return "OVChipkaart{" +
+                "kaart_nummer=" + kaart_nummer +
+                ", geldig_tot=" + geldig_tot +
+                ", klasse=" + klasse +
+                ", saldo=" + saldo +
+                ", reiziger_id=" + reiziger_id +
+                '}';
     }
 }

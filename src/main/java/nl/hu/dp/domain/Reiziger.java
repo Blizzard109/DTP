@@ -84,6 +84,10 @@ public class Reiziger {
         this.ovChipkaartArrayList = ovChipkaartArrayList;
     }
 
+    public void addToOvChipkaartArryList(OVChipkaart ovChipkaart){
+        this.ovChipkaartArrayList.add(ovChipkaart);
+    }
+
     @Override
     public String toString() {
         return "Reiziger{" +
@@ -93,6 +97,7 @@ public class Reiziger {
                 ", achternaam='" + achternaam + '\'' +
                 ", geboortedatum=" + geboortedatum +
                 ", adres=" + adres +
+                ", ovChipkaartArrayList=" + ovChipkaartArrayList +
                 '}';
     }
 }

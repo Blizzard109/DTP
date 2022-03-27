@@ -1,6 +1,7 @@
 package nl.hu.dp.domain;
 
 import java.sql.Date;
+import java.util.ArrayList;
 
 
 public class OVChipkaart {
@@ -9,6 +10,7 @@ public class OVChipkaart {
     private int klasse;
     private double saldo;
     private int reiziger_id;
+    private ArrayList<Product> productArrayList = new ArrayList<Product>();
 
     public OVChipkaart(){}
 
@@ -60,6 +62,17 @@ public class OVChipkaart {
         this.reiziger_id = reiziger_id;
     }
 
+    public ArrayList<Product> getProductArrayList() {
+        return productArrayList;
+    }
+
+    public void setProductArrayList(ArrayList<Product> productArrayList) {
+        this.productArrayList = productArrayList;
+    }
+
+    public void addProductToArrayList(Product product){
+        this.productArrayList.add(product);
+    }
 
     @Override
     public String toString() {
@@ -69,6 +82,7 @@ public class OVChipkaart {
                 ", klasse=" + klasse +
                 ", saldo=" + saldo +
                 ", reiziger_id=" + reiziger_id +
+                ", product=" + productArrayList +
                 '}';
     }
 }

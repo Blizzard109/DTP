@@ -2,6 +2,7 @@ package nl.hu.dp.dao;
 
 import nl.hu.dp.domain.Adres;
 import nl.hu.dp.domain.OVChipkaart;
+import nl.hu.dp.domain.Product;
 import nl.hu.dp.domain.Reiziger;
 
 import java.sql.Connection;
@@ -12,9 +13,15 @@ import java.util.ArrayList;
 
 public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
     private Connection connection = null;
+    private ProductDAO productDAO = null;
 
     public OVChipkaartDAOPostgresql(Connection inConnection) throws SQLException{
         this.connection = inConnection;
+    }
+
+    public OVChipkaartDAOPostgresql(Connection inConnection, ProductDAO productDAO) throws SQLException{
+        this.connection = inConnection;
+        this.productDAO = productDAO;
     }
 
     @Override
@@ -28,7 +35,17 @@ public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
             statement.setInt(3, inOv.getKlasse());
             statement.setDouble(4, inOv.getSaldo());
             statement.setInt(5, inOv.getReiziger_id());
-            return Statement(statement);
+            statement.executeUpdate();
+            statement.close();
+
+
+            if(this.productDAO != null){
+                for (Product p: inOv.getProductArrayList()){
+                    this.productDAO.save(p);
+                }
+            }
+
+            return true;
         } catch (SQLException e){
             System.err.println("SQLException: " + e.getMessage());
         }
@@ -47,7 +64,43 @@ public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
             statement.setInt(2, inOv.getKlasse());
             statement.setDouble(3, inOv.getSaldo());
             statement.setInt(4, inOv.getKaart_nummer());
-            return Statement(statement);
+            statement.executeUpdate();
+
+            if(this.productDAO != null){
+                ArrayList<OVChipkaart> kaarten = new ArrayList<OVChipkaart>();
+                statement = this.connection.prepareStatement(
+                        "SELECT * FROM ov_chipkaart_product WHERE kaart_nummer = ?;");
+
+                statement.setInt(1, inOv.getKaart_nummer());
+                ResultSet results = statement.executeQuery();
+
+                if(results.next()) {
+                    OVChipkaart a = new OVChipkaart();
+                    a.setKaart_nummer(results.getInt("kaart_nummer"));
+                    Product p = new Product();
+                    p.setProduct_nummer(results.getInt("product_nummer"));
+                    a.addProductToArrayList(p);
+                    p.setOvChipkaart(a);
+                    kaarten.add(a);
+                }
+                results.close();
+
+                for(OVChipkaart ov: kaarten){
+                    for (Product product: ov.getProductArrayList()){
+                        productDAO.delete(product);
+                    }
+                }
+
+                for (Product p: inOv.getProductArrayList()){
+                    this.productDAO.save(p);
+                }
+
+                for(Product p: inOv.getProductArrayList()){
+                    this.productDAO.update(p);
+                }
+            }
+            statement.close();
+            return true;
         } catch (SQLException e){
             System.err.println("SQLException update: " + e.getMessage());
         }
@@ -57,9 +110,16 @@ public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
     @Override
     public boolean delete(OVChipkaart inOv) {
         try {
+            if(this.productDAO != null){
+                for (Product p: inOv.getProductArrayList()){
+                    this.productDAO.delete(p);
+                }
+            }
+
             PreparedStatement statement = this.connection.prepareStatement(
                     "DELETE FROM ov_chipkaart WHERE kaart_nummer = ?;");
             statement.setInt(1, inOv.getKaart_nummer());
+
             return Statement(statement);
         } catch (SQLException e){
             System.err.println("SQLException delete: " + e.getMessage());

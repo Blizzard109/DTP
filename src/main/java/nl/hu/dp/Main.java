@@ -3,6 +3,7 @@ package nl.hu.dp;
 import nl.hu.dp.dao.*;
 import nl.hu.dp.domain.Adres;
 import nl.hu.dp.domain.OVChipkaart;
+import nl.hu.dp.domain.Product;
 import nl.hu.dp.domain.Reiziger;
 
 import java.sql.*;
@@ -54,20 +55,82 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        System.out.println("Alle reizigers: ");
         try {
             getConnection();
-            OVChipkaartDAO ovChipkaartDAO = new OVChipkaartDAOPostgresql(connection);
-            AdresDAO dao = new AdresDAOPostgresql(connection);
+            ProductDAO productDAO = new ProductDAOPostgrersql(connection);
+            OVChipkaartDAO ovChipkaartDAO = new OVChipkaartDAOPostgresql(connection,productDAO);
+//            AdresDAO dao = new AdresDAOPostgresql(connection);
             //testAdresDAO(dao);
-            ReizigerDAO rdao = new ReizigerDAOPostgresql(connection, dao, ovChipkaartDAO);
-            //testReizigerDAO(rdao);
-            testOVDAO(rdao, ovChipkaartDAO, dao);
+//            ReizigerDAO rdao = new ReizigerDAOPostgresql(connection, dao);
+//            testReizigerDAO(rdao);
+//            testOVDAO(rdao, ovChipkaartDAO, dao);
+            TestProduct(ovChipkaartDAO, productDAO);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         closeConnection();
     }
+
+
+    private static void TestProduct(OVChipkaartDAO ovDAO, ProductDAO productDAO){
+        OVChipkaart ov1 = new OVChipkaart(45283, java.sql.Date.valueOf("2018-05-31"), 2, 25.50, 2);
+        Product product = new Product(9, "Dal Voordeel 40%", "40% korting buiten de spits en in het weekeind.", 50.00);
+        ov1.addProductToArrayList(product);
+        product.setOvChipkaart(ov1);
+
+        System.out.println("Products of: " + ov1);
+        for (Product p: productDAO.findProductByOv(ov1)){
+            System.out.println(p);
+        }
+
+        System.out.println("");
+        System.out.println("Save ov: " + ov1);
+        try {
+            ovDAO.save(ov1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("");
+        System.out.println("Products of: " + ov1);
+        for (Product p: productDAO.findProductByOv(ov1)){
+            System.out.println(p);
+        }
+
+        try {
+            ovDAO.update(ov1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        System.out.println("");
+        System.out.println("Remove product: " + product);
+        try {
+            ovDAO.delete(ov1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("");
+        System.out.println("Products of: " + ov1);
+        for (Product p: productDAO.findProductByOv(ov1)){
+            System.out.println(p);
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     private static void testOVDAO(ReizigerDAO reizigerDAO, OVChipkaartDAO ovChipkaartDAO, AdresDAO adresDAO) throws SQLException{
         Adres adres = new Adres(1, "3511LX", "37", "Visschersplein", "Utrecht", 1);

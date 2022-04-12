@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
     private Connection connection = null;
@@ -42,6 +43,15 @@ public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
             if(this.productDAO != null){
                 for (Product p: inOv.getProductArrayList()){
                     this.productDAO.save(p);
+                    statement = this.connection.prepareStatement(
+                            "INSERT INTO ov_chipkaart_product (kaart_nummer, product_nummer, status, last_update)" +
+                                    "VALUES (?,?,?,?);");
+                    statement.setInt(1, inOv.getKaart_nummer());
+                    statement.setInt(2, p.getProduct_nummer());
+                    statement.setString(3,"actief");
+                    java.sql.Date date = new java.sql.Date(Calendar.getInstance().getTime().getTime());
+                    statement.setDate(4, date);
+                    statement.execute();
                 }
             }
 
@@ -55,6 +65,54 @@ public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
     @Override
     public boolean update(OVChipkaart inOv) {
         try {
+            if(this.productDAO != null){
+                ArrayList<OVChipkaart> kaarten = new ArrayList<OVChipkaart>();
+                PreparedStatement statement = this.connection.prepareStatement(
+                        "SELECT * FROM ov_chipkaart_product WHERE kaart_nummer = ?;");
+
+                statement.setInt(1, inOv.getKaart_nummer());
+                ResultSet results = statement.executeQuery();
+
+                if(results.next()) {
+                    OVChipkaart a = new OVChipkaart();
+                    a.setKaart_nummer(results.getInt("kaart_nummer"));
+                    statement = this.connection.prepareStatement(
+                            "SELECT * FROM ov_chipkaart WHERE kaart_nummer = ?;");
+                    statement.setInt(1, inOv.getKaart_nummer());
+                    ResultSet resultser = statement.executeQuery();
+                    if(resultser.next()){
+                        a.setGeldig_tot(resultser.getDate("geldig_tot"));
+                        a.setReiziger_id(resultser.getInt("reiziger_id"));
+                    }
+                    Product p = new Product();
+                    statement = this.connection.prepareStatement(
+                            "SELECT * FROM product WHERE product_nummer = ?;");
+                    statement.setInt(1, results.getInt("product_nummer"));
+                    ResultSet presult = statement.executeQuery();
+                    if(presult.next()){
+                        p.setNaam(presult.getString("naam"));
+                        p.setBeschrijving("BESCHRIJVING");
+                    }
+                    p.setProduct_nummer(results.getInt("product_nummer"));
+                    a.addProductToArrayList(p);
+                    p.setOvChipkaart(a);
+                    kaarten.add(a);
+                }
+                results.close();
+
+                for(OVChipkaart ov: kaarten){
+                    this.delete(ov);
+                }
+
+                for (OVChipkaart ov: kaarten){
+                    this.save(ov);
+                }
+
+                for(Product p: inOv.getProductArrayList()){
+                    this.productDAO.update(p);
+                }
+            }
+
             PreparedStatement statement = this.connection.prepareStatement(
                     "UPDATE ONLY ov_chipkaart SET geldig_tot = ?," +
                             "klasse = ?," +
@@ -65,40 +123,6 @@ public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
             statement.setDouble(3, inOv.getSaldo());
             statement.setInt(4, inOv.getKaart_nummer());
             statement.executeUpdate();
-
-            if(this.productDAO != null){
-                ArrayList<OVChipkaart> kaarten = new ArrayList<OVChipkaart>();
-                statement = this.connection.prepareStatement(
-                        "SELECT * FROM ov_chipkaart_product WHERE kaart_nummer = ?;");
-
-                statement.setInt(1, inOv.getKaart_nummer());
-                ResultSet results = statement.executeQuery();
-
-                if(results.next()) {
-                    OVChipkaart a = new OVChipkaart();
-                    a.setKaart_nummer(results.getInt("kaart_nummer"));
-                    Product p = new Product();
-                    p.setProduct_nummer(results.getInt("product_nummer"));
-                    a.addProductToArrayList(p);
-                    p.setOvChipkaart(a);
-                    kaarten.add(a);
-                }
-                results.close();
-
-                for(OVChipkaart ov: kaarten){
-                    for (Product product: ov.getProductArrayList()){
-                        productDAO.delete(product);
-                    }
-                }
-
-                for (Product p: inOv.getProductArrayList()){
-                    this.productDAO.save(p);
-                }
-
-                for(Product p: inOv.getProductArrayList()){
-                    this.productDAO.update(p);
-                }
-            }
             statement.close();
             return true;
         } catch (SQLException e){
@@ -112,6 +136,14 @@ public class OVChipkaartDAOPostgresql implements OVChipkaartDAO{
         try {
             if(this.productDAO != null){
                 for (Product p: inOv.getProductArrayList()){
+
+                    PreparedStatement statement = this.connection.prepareStatement("DELETE FROM ov_chipkaart_product " +
+                            "WHERE product_nummer = ? AND kaart_nummer = ?;");
+                    statement.setInt(1, p.getProduct_nummer());
+                    System.out.println(p.getOvChipkaart().getKaart_nummer());
+                    statement.setInt(2, inOv.getKaart_nummer());
+                    statement.execute();
+                    statement.close();
                     this.productDAO.delete(p);
                 }
             }

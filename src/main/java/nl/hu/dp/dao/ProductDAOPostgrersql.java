@@ -26,17 +26,6 @@ public class ProductDAOPostgrersql implements ProductDAO {
             statement.setString(3, inProduct.getBeschrijving());
             statement.setDouble(4, inProduct.getPrijs());
             statement.execute();
-
-            statement = this.connection.prepareStatement(
-                    "INSERT INTO ov_chipkaart_product (kaart_nummer, product_nummer, status, last_update)" +
-                            "VALUES (?,?,?,?);");
-            statement.setInt(1, inProduct.getOvChipkaart().getKaart_nummer());
-            statement.setInt(2,inProduct.getProduct_nummer());
-            statement.setString(3,"actief");
-            java.sql.Date date = new java.sql.Date(Calendar.getInstance().getTime().getTime());
-            statement.setDate(4, date);
-            statement.execute();
-
             statement.close();
         } catch (SQLException e){
             System.err.println("SQLException save: " + e.getMessage());
@@ -66,14 +55,7 @@ public class ProductDAOPostgrersql implements ProductDAO {
     @Override
     public boolean delete(Product inProduct) {
         try {
-            PreparedStatement statement = this.connection.prepareStatement("DELETE FROM ov_chipkaart_product " +
-                    "WHERE product_nummer = ? AND kaart_nummer = ?;");
-            statement.setInt(1, inProduct.getProduct_nummer());
-            System.out.println(inProduct.getOvChipkaart().getKaart_nummer());
-            statement.setInt(2, inProduct.getOvChipkaart().getKaart_nummer());
-            statement.execute();
-
-            statement = this.connection.prepareStatement(
+            PreparedStatement statement = this.connection.prepareStatement(
                     "DELETE FROM product WHERE product_nummer = ?;");
             statement.setInt(1, inProduct.getProduct_nummer());
             statement.execute();
